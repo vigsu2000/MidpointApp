@@ -1,5 +1,6 @@
 package com.example.vignesh.midpoint;
 
+import android.content.Intent;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 
@@ -9,6 +10,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.maps.android.SphericalUtil;
 import android.location.Geocoder;
 import android.location.Address;
 import android.view.View;
@@ -20,6 +22,7 @@ import java.util.List;
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
+    private String location1, location2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,12 +32,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        Intent activityThatCalled = getIntent();
+        location1 = activityThatCalled.getExtras().getString("location1");
+        location2 = activityThatCalled.getExtras().getString("location2");
     }
 
     public void onMapSearch(View view) {
-        EditText locationSearch1 = (EditText) findViewById(R.id.editText1);
-        String location1 = locationSearch1.getText().toString();
+        //EditText locationSearch1 = (EditText) findViewById(R.id.editText1);
+        //String location1 = locationSearch1.getText().toString();
         List<Address> addressList1 = null;
+
+        LatLng latLng1 = null;
+        LatLng latLng2 = null;
 
         if (location1 != null || !location1.equals("")) {
             Geocoder geocoder = new Geocoder(this);
@@ -45,12 +54,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 e.printStackTrace();
             }
             Address address = addressList1.get(0);
-            LatLng latLng1 = new LatLng(address.getLatitude(), address.getLongitude());
-            mMap.addMarker(new MarkerOptions().position(latLng1).title("Marker"));
+            latLng1 = new LatLng(address.getLatitude(), address.getLongitude());
+            mMap.addMarker(new MarkerOptions().position(latLng1).title("Location 1"));
         }
 
-        EditText locationSearch2 = (EditText) findViewById(R.id.editText2);
-        String location2 = locationSearch2.getText().toString();
+        //EditText locationSearch2 = (EditText) findViewById(R.id.editText2);
+        //String location2 = locationSearch2.getText().toString();
         List<Address> addressList2 = null;
 
         if (location2 != null || !location2.equals("")) {
@@ -62,8 +71,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 e.printStackTrace();
             }
             Address address = addressList2.get(0);
-            LatLng latLng2 = new LatLng(address.getLatitude(), address.getLongitude());
-            mMap.addMarker(new MarkerOptions().position(latLng2).title("Marker"));
+            latLng2 = new LatLng(address.getLatitude(), address.getLongitude());
+            mMap.addMarker(new MarkerOptions().position(latLng2).title("Location 2"));
+
+            LatLng midpoint = SphericalUtil.interpolate(latLng1, latLng2, .5);
+
+            mMap.addMarker(new MarkerOptions().position(midpoint).title("Midpoint"));
+
             mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng2));
         }
     }
