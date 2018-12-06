@@ -3,13 +3,24 @@
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
-
+    <Button
+        android:id="@+id/place_picker_button"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:onClick="goPlacePicker"
+        android:text="Find Nearby Places" />
     <Button
         android:id="@+id/search_button"
         android:layout_width="match_parent"
-        android:layout_height="80dp"
+        android:layout_height="40dp"
         android:onClick="onMapSearch"
-        android:text="Go!" />
+        android:text="Change Meet Up Point" />
+
+    <SeekBar
+        android:layout_width="match_parent"
+        android:layout_height="20dp"
+        android:id="@+id/seek_bar"
+        android:max="100"/>
 
 
     <fragment xmlns:android="http://schemas.android.com/apk/res/android"

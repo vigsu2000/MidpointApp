@@ -1,28 +1,46 @@
 package com.example.vignesh.midpoint;
 
+import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.location.places.PlaceBuffer;
+import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.maps.android.SphericalUtil;
 import android.location.Geocoder;
 import android.location.Address;
+import android.util.Log;
 import android.view.View;
-import android.widget.EditText;
+
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlacePicker;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+
+import android.widget.SeekBar;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.List;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
+    int PLACE_PICKER_REQUEST = 1;
+
     private GoogleMap mMap;
     private String location1, location2;
+    private SeekBar seekBar;
+    private LatLng meetUpPoint;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,11 +53,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Intent activityThatCalled = getIntent();
         location1 = activityThatCalled.getExtras().getString("location1");
         location2 = activityThatCalled.getExtras().getString("location2");
+        seekBar = findViewById(R.id.seek_bar);
+        seekBar.setProgress(50);
     }
 
     public void onMapSearch(View view) {
-        //EditText locationSearch1 = (EditText) findViewById(R.id.editText1);
-        //String location1 = locationSearch1.getText().toString();
+        mMap.clear();
+
         List<Address> addressList1 = null;
 
         LatLng latLng1 = null;
@@ -58,8 +78,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             mMap.addMarker(new MarkerOptions().position(latLng1).title("Location 1"));
         }
 
-        //EditText locationSearch2 = (EditText) findViewById(R.id.editText2);
-        //String location2 = locationSearch2.getText().toString();
         List<Address> addressList2 = null;
 
         if (location2 != null || !location2.equals("")) {
@@ -74,11 +92,36 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             latLng2 = new LatLng(address.getLatitude(), address.getLongitude());
             mMap.addMarker(new MarkerOptions().position(latLng2).title("Location 2"));
 
-            LatLng midpoint = SphericalUtil.interpolate(latLng1, latLng2, .5);
+            double distanceFromLoc1VsLoc2 = seekBar.getProgress();
+            distanceFromLoc1VsLoc2 = distanceFromLoc1VsLoc2 / 100;
 
-            mMap.addMarker(new MarkerOptions().position(midpoint).title("Midpoint"));
+            meetUpPoint = SphericalUtil.interpolate(latLng1, latLng2, distanceFromLoc1VsLoc2);
 
-            mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng2));
+            mMap.addMarker(new MarkerOptions().position(meetUpPoint).title("Meet Up Point"));
+
+            mMap.animateCamera(CameraUpdateFactory.newLatLng(meetUpPoint));
+
+        }
+    }
+
+    public void goPlacePicker(View view) {
+        PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
+        builder.setLatLngBounds(new LatLngBounds(meetUpPoint, meetUpPoint));
+        try {
+            startActivityForResult(builder.build(MapsActivity.this), PLACE_PICKER_REQUEST);
+        } catch (GooglePlayServicesRepairableException e) {
+            e.printStackTrace();
+        } catch (GooglePlayServicesNotAvailableException e) {
+            e.printStackTrace();
+        }
+    }
+
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == PLACE_PICKER_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                Place place = PlacePicker.getPlace(MapsActivity.this, data);
+                System.out.println(place.getAddress());
+            }
         }
     }
 
@@ -94,10 +137,46 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        mMap.clear();
 
-        // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        List<Address> addressList1 = null;
+
+        LatLng latLng1 = null;
+        LatLng latLng2 = null;
+
+        if (location1 != null || !location1.equals("")) {
+            Geocoder geocoder = new Geocoder(this);
+            try {
+                addressList1 = geocoder.getFromLocationName(location1, 1);
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            Address address = addressList1.get(0);
+            latLng1 = new LatLng(address.getLatitude(), address.getLongitude());
+            mMap.addMarker(new MarkerOptions().position(latLng1).title("Location 1"));
+        }
+
+        List<Address> addressList2 = null;
+
+        if (location2 != null || !location2.equals("")) {
+            Geocoder geocoder = new Geocoder(this);
+            try {
+                addressList2 = geocoder.getFromLocationName(location2, 1);
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            Address address = addressList2.get(0);
+            latLng2 = new LatLng(address.getLatitude(), address.getLongitude());
+            mMap.addMarker(new MarkerOptions().position(latLng2).title("Location 2"));
+
+            meetUpPoint = SphericalUtil.interpolate(latLng1, latLng2, .5);
+
+            mMap.addMarker(new MarkerOptions().position(meetUpPoint).title("Meet Up Point"));
+
+            mMap.animateCamera(CameraUpdateFactory.newLatLng(meetUpPoint));
+
+        }
     }
 }
