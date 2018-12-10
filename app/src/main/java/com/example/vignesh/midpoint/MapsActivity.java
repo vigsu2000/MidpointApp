@@ -38,7 +38,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     int PLACE_PICKER_REQUEST = 1;
 
     private GoogleMap mMap;
-    private String location1, location2;
+    private Address location1, location2;
     private SeekBar seekBar;
     private LatLng meetUpPoint;
 
@@ -51,8 +51,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         Intent activityThatCalled = getIntent();
-        location1 = activityThatCalled.getExtras().getString("location1");
-        location2 = activityThatCalled.getExtras().getString("location2");
+        location1 = (Address) activityThatCalled.getExtras().get("address1");
+        location2 = (Address) activityThatCalled.getExtras().get("address2");
         seekBar = findViewById(R.id.seek_bar);
         seekBar.setProgress(50);
     }
@@ -65,43 +65,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         LatLng latLng1 = null;
         LatLng latLng2 = null;
 
-        if (location1 != null || !location1.equals("")) {
-            Geocoder geocoder = new Geocoder(this);
-            try {
-                addressList1 = geocoder.getFromLocationName(location1, 1);
+        latLng1 = new LatLng(location1.getLatitude(), location1.getLongitude());
+        mMap.addMarker(new MarkerOptions().position(latLng1).title("Location 1"));
 
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            Address address = addressList1.get(0);
-            latLng1 = new LatLng(address.getLatitude(), address.getLongitude());
-            mMap.addMarker(new MarkerOptions().position(latLng1).title("Location 1"));
-        }
+        latLng2 = new LatLng(location2.getLatitude(), location2.getLongitude());
+        mMap.addMarker(new MarkerOptions().position(latLng2).title("Location 2"));
 
-        List<Address> addressList2 = null;
+        double distanceFromLoc1VsLoc2 = seekBar.getProgress();
+        distanceFromLoc1VsLoc2 = distanceFromLoc1VsLoc2 / 100;
 
-        if (location2 != null || !location2.equals("")) {
-            Geocoder geocoder = new Geocoder(this);
-            try {
-                addressList2 = geocoder.getFromLocationName(location2, 1);
+        meetUpPoint = SphericalUtil.interpolate(latLng1, latLng2, distanceFromLoc1VsLoc2);
 
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            Address address = addressList2.get(0);
-            latLng2 = new LatLng(address.getLatitude(), address.getLongitude());
-            mMap.addMarker(new MarkerOptions().position(latLng2).title("Location 2"));
+        mMap.addMarker(new MarkerOptions().position(meetUpPoint).title("Meet Up Point"));
 
-            double distanceFromLoc1VsLoc2 = seekBar.getProgress();
-            distanceFromLoc1VsLoc2 = distanceFromLoc1VsLoc2 / 100;
+        mMap.animateCamera(CameraUpdateFactory.newLatLng(meetUpPoint));
 
-            meetUpPoint = SphericalUtil.interpolate(latLng1, latLng2, distanceFromLoc1VsLoc2);
-
-            mMap.addMarker(new MarkerOptions().position(meetUpPoint).title("Meet Up Point"));
-
-            mMap.animateCamera(CameraUpdateFactory.newLatLng(meetUpPoint));
-
-        }
     }
 
     public void goPlacePicker(View view) {
@@ -139,44 +117,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap = googleMap;
         mMap.clear();
 
-        List<Address> addressList1 = null;
-
         LatLng latLng1 = null;
         LatLng latLng2 = null;
 
-        if (location1 != null || !location1.equals("")) {
-            Geocoder geocoder = new Geocoder(this);
-            try {
-                addressList1 = geocoder.getFromLocationName(location1, 1);
+        latLng1 = new LatLng(location1.getLatitude(), location1.getLongitude());
+        mMap.addMarker(new MarkerOptions().position(latLng1).title("Location 1"));
 
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            Address address = addressList1.get(0);
-            latLng1 = new LatLng(address.getLatitude(), address.getLongitude());
-            mMap.addMarker(new MarkerOptions().position(latLng1).title("Location 1"));
-        }
+        latLng2 = new LatLng(location2.getLatitude(), location2.getLongitude());
+        mMap.addMarker(new MarkerOptions().position(latLng2).title("Location 2"));
 
-        List<Address> addressList2 = null;
+        meetUpPoint = SphericalUtil.interpolate(latLng1, latLng2, .5);
 
-        if (location2 != null || !location2.equals("")) {
-            Geocoder geocoder = new Geocoder(this);
-            try {
-                addressList2 = geocoder.getFromLocationName(location2, 1);
+        mMap.addMarker(new MarkerOptions().position(meetUpPoint).title("Meet Up Point"));
 
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            Address address = addressList2.get(0);
-            latLng2 = new LatLng(address.getLatitude(), address.getLongitude());
-            mMap.addMarker(new MarkerOptions().position(latLng2).title("Location 2"));
-
-            meetUpPoint = SphericalUtil.interpolate(latLng1, latLng2, .5);
-
-            mMap.addMarker(new MarkerOptions().position(meetUpPoint).title("Meet Up Point"));
-
-            mMap.animateCamera(CameraUpdateFactory.newLatLng(meetUpPoint));
-
-        }
+        mMap.animateCamera(CameraUpdateFactory.newLatLng(meetUpPoint));
     }
 }

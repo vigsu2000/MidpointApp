@@ -9,38 +9,46 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="#00008B"
         android:orientation="vertical"
-        android:paddingBottom="15dp"
-        android:paddingTop="15dp" >
+        android:paddingBottom="50dp" >
         <TextView
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight = ".15"
+            android:layout_weight = ".04"
             android:text = "MIDPOINT"
             android:textSize="50sp"
-            android:gravity="center" />
+            android:gravity="center"
+            android:textColor="#FFA500"/>
         <EditText
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight= ".1"
+            android:layout_weight= ".02"
             android:hint = "Enter First Location"
             android:layout_gravity="center_horizontal"
-            android:id="@+id/loc1" />
+            android:id="@+id/loc1"
+            android:textColorHint="#FFA500"
+            android:textColor="#FFA500"/>
         <EditText
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight= ".1"
+            android:layout_weight= ".02"
             android:hint = "Enter Second Location"
             android:layout_gravity="center_horizontal"
-            android:id="@+id/loc2" />
+            android:id="@+id/loc2"
+            android:textColorHint="#FFA500"
+            android:paddingBottom="60dp"
+            android:textColor="#FFA500"/>
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:layout_weight=".1"
+            android:layout_weight=".01"
             android:onClick="onFindMidpointClick"
-            android:text="Find Meeting Point" />
+            android:text="Find Meeting Point"
+            android:textColor="#FFA500"
+            android:background="#778899"/>
     </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>
